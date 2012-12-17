@@ -129,8 +129,8 @@ class Calendar extends DBConnect
 			 * Filter events to only those happening in the currently
 			 * selected month
 			 */
-			$sql .= "WHERE `event_start` BETWEEN `$start_date`
-					AND `$end_date` ORDER BY `event_start`";
+			$sql .= "WHERE `event_start` BETWEEN '$start_date'
+					AND '$end_date' ORDER BY `event_start`";
 		}
 		
 		try
@@ -187,5 +187,198 @@ class Calendar extends DBConnect
 			}
 		}
 		return $events;
+	}
+
+	/**
+	 * Returns a single event object
+	 *
+	 * @param int $id an event ID
+	 * @return object the event object
+	 **/
+	private function _loadEventById($id)
+	{
+		/*
+		 * If no ID is passed, return NULL
+		 */
+		if(empty($id))
+		{
+			return NULL;
+		}
+
+		/*
+		 * Load the events info array
+		 */
+		$event = $this->_loadEventData($id);
+
+		/*
+		 * Return an event object
+		 */
+		if(isset($event[0]))
+		{
+			return new Event($event[0]);
+		}
+		else
+		{
+			return NULL;
+		}	
+
+	}
+	
+	/**
+	 * Return HTML markup to display the calendar and events
+	 * 
+	 * @return string the calendar HTML markup
+	 */
+	public function buildCalendar()
+	{
+		/*
+		 * Determine the calendar month and create an array of
+		 * weekday abbreviations to label the calendar columns 
+		 */
+		$cal_month = date('F Y', strtotime($this->_useDate));
+		$weekdays = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
+		
+		/*
+		 * Add a header to the calendar markup
+		 */
+		$html = "\n\t<h2>$cal_month</h2>";
+		for($d=0, $labels=NULL; $d<7; ++$d)
+		{
+			$labels .= "\n\t\t<li>".$weekdays[$d]."</li>";
+		}	
+		$html .= "\n\t<ul class=\"weekdays\">".$labels."\n\t</ul>";
+		
+		/*
+		 * Load events data
+		 */
+		$events = $this->_createEventObj();
+		
+		/*
+		 * Create the calendar markup 
+		 */ 
+		$html .= "\n\t<ul>"; // Start a new unordered list
+		for ( $i=1, $c=1, $t=date('j'), $m=date('m'), $y=date('Y');
+		          $c<=$this->_daysInMonth; ++$i )
+		{
+		     /*
+		      * Apply a "fill" class to the boxes occurring before
+		      * the first of the month
+		      */
+		     $class = $i<=$this->_startDay ? "fill" : NULL;
+		     
+		     /*
+		      * Add a "today" class if the current date matches
+		      * the current date
+		      */
+		     if ( $c+1==$t && $m==$this->_m && $y==$this->_y )
+		     {
+		          $class = "today";
+		     }
+		     
+		     /*
+		      * Build the opening and closing list item tags
+		      */
+		     $ls = sprintf("\n\t\t<li class=\"%s\">", $class);
+			 $le = "\n\t\t</li>";
+			 
+		     /*
+		      * Add the day of the month to identify the calendar box
+		      */
+			 $event_info = NULL;
+		     if ( $this->_startDay<$i && $this->_daysInMonth>=$c)
+		     {
+		     	/*
+		     	 * Format events data
+		     	 */
+		     	 // clear the variable
+		     	if ( isset($events[$c]) )
+		     	{
+		     		foreach ( $events[$c] as $event )
+		     		{
+		     			$link = '<a href="view.php?event_id='
+		     					. $event->id . '">' . $event->title
+		     					. '</a>';
+		     			$event_info .= "\n\t\t\t$link";
+		     		}
+		     	}
+		     	
+		     	$date = sprintf("\n\t\t\t<strong>%02d</strong>",$c++);
+		     }
+		     else 
+		     { 
+		     	$date="&nbsp;"; 
+		     }
+		     
+			/*
+		     * If the current day is a Saturday, wrap to the next row
+		     */
+		    $wrap = $i!=0 && $i%7==0 ? "\n\t</ul>\n\t<ul>" : NULL;
+		    
+		    /*
+		     * Assemble the pieces into a finished item
+		     */
+		    $html .= $ls . $date . $event_info . $le . $wrap;
+		}
+		/*
+		 * Add filler to finish out the last week
+		 */
+		while ( $i%7!=1 )
+		{
+			$html .= "\n\t\t<li class=\"fill\">&nbsp;</li>";
+			++$i;
+		}
+		
+		/*
+		 * Close the final unordered list
+		 */
+		$html .= "\n\t</ul>\n\n";
+
+		/*
+		 * Return the markup for output
+		 */
+		return $html;
+	}	
+	
+	/**
+	 * Displays a given event's information
+	 *
+	 * @param int $id the event ID	
+	 * @return string markup to display the  event information
+	 **/
+	public function displayEvent($id)
+	{
+		/*
+		 * Make sure an ID was passed
+		 */
+		if(empty($id))
+		{
+			return NULL;
+		}
+
+		/*
+		 * Make sure the ID is an integer
+		 */
+		$id = preg_replace('/[^0-9]/', '', $id);
+
+		/*
+		 * Load the event data from the DB
+		 */
+		$event = $this->_loadEventById($id);
+
+		/*
+		 * Generate strings for the date, start, and end time
+		 */
+		$ts = strtotime($event->start);
+		$date = date('F d, Y', $ts);
+		$start = date('g:ia', $ts);
+		$end = date('g:ia', strtotime($event->end));
+
+		/*
+		 * Generate and return the markup
+		 */
+		return "<h2>$event->title</h2>"
+		    . "\n\t<p class=\"dates\">$date, $start&mdash;$end</p>"
+		    . "\n\t<p>$event->description</p>";
+
 	}
 }
