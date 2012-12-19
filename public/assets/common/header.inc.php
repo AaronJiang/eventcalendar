@@ -5,17 +5,13 @@
 <head>
     <meta http-equiv="Content-Type"
           content="text/html;charset=utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">      
     <title><?=$page_title?></title>
     
     <!--Include bootstrap -->      
+    <?php foreach ( $css_files as $css ): ?>
     <link rel="stylesheet" type="text/css" media="screen,projection"
-          href="assets/css/bootstrap.min.css" />
-	<link rel="stylesheet" type="text/css" media="screen,projection"
-          href="assets/css/bootstrap-responsive.min.css" />
+          href="assets/css/<?php echo $css; ?>" />
+	<?php endforeach; ?>
 
-    <!--Include self style-->      
-    <link rel="stylesheet" type="text/css" media="screen,projection"
-          href="assets/css/style.css" />    
 </head>
 <body>

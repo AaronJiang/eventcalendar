@@ -344,7 +344,7 @@ class Calendar extends DBConnect
 	 *
 	 * @param int $id the event ID	
 	 * @return string markup to display the  event information
-	 **/
+	 */
 	public function displayEvent($id)
 	{
 		/*
@@ -381,4 +381,74 @@ class Calendar extends DBConnect
 		    . "\n\t<p>$event->description</p>";
 
 	}
+	
+	/**
+	 * Generate a form to edit or create events
+	 * 
+	 * @return string the HTML markup for the editing form 
+	 */
+	public function displayForm()
+	{
+		/*
+		 * Check if an ID was passed
+		 */
+		if(isset($_POST['event_id']))
+		{
+			$id = (int)$_POST['event_id'];
+		}
+		else
+		{
+			$id = NULL;
+		}	
+		
+		/*
+		 * Instantiate the headline/submit button text
+		 */
+		$submit = "Create a New Event";
+		
+		/*
+		 * If an ID is passed, loads the associated event
+		 */
+		if(!empty($id))
+		{
+			$event = $this->_loadEventById($id);
+			
+			/*
+			 * If no object is returned, return NULL
+			 */
+			if(!is_object($event))
+			{
+				return NULL;
+			}	
+			$submit = "Edit This Event";
+		}
+		
+		/*
+		 * Build the markup
+		 */
+		return <<<EOF
+	    <form action="assets/inc/process.inc.php" method="post">
+        <fieldset>
+             <legend>$submit</legend>
+             <label for="event_title">Event Title</label>
+             <input type="text" name="event_title"
+                   id="event_title" value="$event->title" />
+             <label for="event_start">Start Time</label>
+             <input type="text" name="event_start"
+                   id="event_start" value="$event->start" />
+             <label for="event_end">End Time</label>
+             <input type="text" name="event_end"
+                   id="event_end" value="$event->end" />
+             <label for="event_description">Event Description</label>
+             <textarea name="event_description"
+                   id="event_description">$event->description</textarea>
+             <input type="hidden" name="event_id" value="$event->id" />
+             <input type="hidden" name="token" value="$_SESSION[token]" />
+             <input type="hidden" name="action" value="event_edit" />
+             <input type="submit" class="btn" name="event_submit" value="$submit" />
+             or <a href="./">cancel</a>
+        </fieldset>
+	    </form>
+EOF;
+	}	
 }

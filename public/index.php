@@ -14,6 +14,7 @@ $cal = new Calendar($dbo, "2010-01-01 12:00:00");
  * Include the header
  */
 $page_title = "Events Calendar";
+$css_files = array("style.css");
 include_once 'assets/common/header.inc.php';
 
 /*
