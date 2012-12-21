@@ -35,6 +35,7 @@ include_once '../sys/core/init.inc.php';
  * Include the header
  */
 $page_title = "View Event";
+$css_files = array("style.css");
 include_once 'assets/common/header.inc.php';
 
 /*

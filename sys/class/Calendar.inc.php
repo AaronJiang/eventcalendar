@@ -225,6 +225,21 @@ class Calendar extends DBConnect
 	}
 	
 	/**
+	 * Generates markup to display administrative links
+	 * 
+	 * @return string markup to display the administrative links
+	 */
+	private function _adminGeneralOptions()
+	{
+		/*
+		 * Display admin controls
+		 */
+		return <<<ADMIN_OPTIONS
+		<a href="admin.php" class="admin btn">+ Add a New Event</a>
+ADMIN_OPTIONS;
+	}
+	
+	/**
 	 * Return HTML markup to display the calendar and events
 	 * 
 	 * @return string the calendar HTML markup
@@ -332,11 +347,16 @@ class Calendar extends DBConnect
 		 * Close the final unordered list
 		 */
 		$html .= "\n\t</ul>\n\n";
-
+		
+		/*
+		 * If logged in, display the admin options
+		 */
+		$admin = $this->_adminGeneralOptions();
+		
 		/*
 		 * Return the markup for output
 		 */
-		return $html;
+		return $html.$admin;
 	}	
 	
 	/**
@@ -451,4 +471,78 @@ class Calendar extends DBConnect
 	    </form>
 EOF;
 	}	
+	
+	/**
+	 * Validates the form and saves/edits the event
+	 * 
+	 * @return mixed TRUE on success, an error message on failure
+	 */
+	public function processForm()
+	{
+		/*
+		 * Exit if the action isn't set properly
+		 */	
+		if($_POST['action']!='event_edit')
+		{
+			return "The method processForm was accessed incorrectly";
+		}
+		
+		/*
+		 * Escape data from the form
+		 */
+		$title = htmlspecialchars($_POST['event_title']);
+		$desc = htmlspecialchars($_POST['event_description']);
+		$start = htmlspecialchars($_POST['event_start']);
+		$end = htmlspecialchars($_POST['event_end']);
+		
+		/*
+		 * If no eventID passed, create a new event
+		 */
+		if(empty($_POST['event_id']))
+		{
+			$sql = "INSERT INTO `events`
+			            (`event_title`, `event_desc`, `event_start`,
+			                `event_end`)
+			        VALUES
+			            (:title, :description, :start, :end)";
+				
+		}
+		/*
+		 * Update the event if it's been edited
+		 */
+		else
+		{
+			/*
+			 * Cast the event ID as an integer for security
+			 */
+			$id = (int)$_POST['event_id'];
+			$sql = "UPDATE `events`
+					SET
+					`event_title`=:title,
+					`event_desc`=:description,
+					`event_start`=:start,
+					`event_end`=:end
+					WHERE `event_id`=$id";
+				
+		}	
+		
+		/*
+		 * Execute the create or edit query after binding the data
+		 */
+		try
+		{
+			$stmt = $this->db->prepare($sql);
+			$stmt->bindParam(":title", $title, PDO::PARAM_STR);
+			$stmt->bindParam(":description", $desc, PDO::PARAM_STR);
+			$stmt->bindParam(":start", $start, PDO::PARAM_STR);
+			$stmt->bindParam(":end", $end, PDO::PARAM_STR);
+			$stmt->execute();
+			$stmt->closeCursor();
+			return TRUE;	
+		}
+		catch(Exception $e)
+		{
+			return $e->getMessage();
+		}
+	}
 }
