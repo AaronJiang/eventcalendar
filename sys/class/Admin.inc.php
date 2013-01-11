@@ -84,7 +84,8 @@ class Admin extends DBConnect
 		/*
 		 * Get the hash of the user-supplied password
 		 */
-		$hash = $this->_getSaltedHash($pword, $user['user_pass']);
+		//$hash = $this->_getSaltedHash($pword, $user['user_pass']);
+		$hash = $this->_getSaltedHash($pword);
 		
 		/*
 		 * Checks if the hashed password matches the stored hash
@@ -110,4 +111,37 @@ class Admin extends DBConnect
 		}
 		
 	}
+	
+	/**
+	 * Generates a salted hash of a supplied string
+	 * 
+	 * @param string $string to be hashed
+	 * @param string $salt extract the hash from here
+	 * @return string the salted hash
+	 */
+	private function _getSaltedHash($string, $salt=NULL)
+	{
+		/*
+		 * Generate a salt if no salt is passed
+		 */
+		if($salt==NULL)
+		{
+			$salt = substr(md5(time()), 0, $this->_saltLength);
+		}
+		/*
+		 * Extract the salt from the string if one is passed
+		 */
+		else 
+		{
+			$salt = substr($salt, 0, $this->_saltLength);	
+		}
+		
+		return $salt.sha1($salt.$string);
+	}
+	
+	public function testSaltedHash($string, $salt=NULL)
+	{
+		return $this->_getSaltedHash($string, $salt);
+	}
+	
 }
