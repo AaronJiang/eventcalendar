@@ -1,8 +1,10 @@
 <?php
+session_start();
+
 /*
   * Make sure the event ID was passed
   */
-if ( isset($_POST['event_id']) )
+if ( isset($_POST['event_id']) && isset($_SESSION['user']) )
 {
      /*
       * Collect the event ID from the URL string

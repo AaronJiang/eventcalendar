@@ -231,12 +231,27 @@ class Calendar extends DBConnect
 	 */
 	private function _adminGeneralOptions()
 	{
-		/*
-		 * Display admin controls
-		 */
-		return <<<ADMIN_OPTIONS
-		<a href="admin.php" class="admin btn">+ Add a New Event</a>
+		if(isset($_SESSION['user']))
+		{
+			return <<<ADMIN_OPTIONS
+			<a href="admin.php" class="admin btn">+ Add a New Event</a>
+			<form action="assets/inc/process.inc.php" method="post">
+			    <div>
+			        <input type="submit" value="Log Out" class="btn" />
+			        <input type="hidden" name="token"
+			            value="$_SESSION[token]" />
+			        <input type="hidden" name="action"
+			            value="user_logout" />
+			    </div>
+			</form>
 ADMIN_OPTIONS;
+		}
+		else
+		{
+			return <<<ADMIN_OPTIONS
+    		 <a href="login.php" class="btn">Log In</a>
+ADMIN_OPTIONS;
+		}
 	}
 	
 	/**
@@ -247,26 +262,33 @@ ADMIN_OPTIONS;
 	 */
 	private function _adminEntryOptions($id)
 	{
-		return <<<ADMIN_OPTIONS
-		<div class="admin-options">
-		<form action="admin.php" method="post">
-			<p>
-			<input type="submit" class="admin btn" name="edit_event"
-				value="Edit This Event"/>
-			<input type="hidden" name="event_id"
-				value="$id"/>
-			</p>
-		</form>
-		<form action="confirmdelete.php" method="post">
-		    <p>
-	         <input type="submit" class="admin btn" name="delete_event"
-	               value="Delete This Event" />
-	         <input type="hidden" name="event_id"
-	               value="$id" />
-		    </p>
-		</form>
-		</div>
+		if ( isset($_SESSION['user']) )
+		{
+			return <<<ADMIN_OPTIONS
+			<div class="admin-options">
+			<form action="admin.php" method="post">
+				<p>
+				<input type="submit" class="admin btn" name="edit_event"
+					value="Edit This Event"/>
+				<input type="hidden" name="event_id"
+					value="$id"/>
+				</p>
+			</form>
+			<form action="confirmdelete.php" method="post">
+			    <p>
+		         <input type="submit" class="admin btn" name="delete_event"
+		               value="Delete This Event" />
+		         <input type="hidden" name="event_id"
+		               value="$id" />
+			    </p>
+			</form>
+			</div>
 ADMIN_OPTIONS;
+		}
+		else
+		{
+			return NULL;
+		}
 	}
 	/**
 	 * Return HTML markup to display the calendar and events

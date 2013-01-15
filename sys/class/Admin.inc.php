@@ -57,7 +57,7 @@ class Admin extends DBConnect
 		/*
 		 * Retrieves the matching info from the DB if it exists
 		 */
-		$sql = "SELECT `user_id`, `user_name`, `user_email`, `user_pass 
+		$sql = "SELECT `user_id`, `user_name`, `user_email`, `user_pass` 
 				FROM `users` WHERE `user_name` = :uname LIMIT 1";
 		
 		try
@@ -65,7 +65,7 @@ class Admin extends DBConnect
 			$stmt = $this->db->prepare($sql);
 			$stmt->bindParam(':uname', $uname, PDO::PARAM_STR);
 			$stmt->execute();
-			$user = array_shift($stmt->fetchAll());
+			$user = $stmt->fetchAll();
 			$stmt->closeCursor();
 		}
 		catch(Exception $e)
@@ -80,17 +80,16 @@ class Admin extends DBConnect
 		{
 			return "Your username or password is invalid.";
 		}
-		
+
 		/*
 		 * Get the hash of the user-supplied password
 		 */
-		//$hash = $this->_getSaltedHash($pword, $user['user_pass']);
-		$hash = $this->_getSaltedHash($pword);
+		$hash = $this->_getSaltedHash($pword, $user[0]['user_pass']);
 		
 		/*
 		 * Checks if the hashed password matches the stored hash
 		 */
-		if($user['user_pass']==$hash)
+		if($user[0]['user_pass']==$hash)
 		{
 			/*
 			 * Stores user info in the session as an array
@@ -110,6 +109,25 @@ class Admin extends DBConnect
 			return "Your username or password is invalid.";
 		}
 		
+	}
+	
+	/**
+	 * Logs out the user
+	 * 
+	 * @return mixed TRUE on success or message on failure
+	 */
+	public function processLogout()
+	{
+		/*
+		 * Fails if the proper action was not submitted
+		 */
+		if($_POST['action']!='user_logout')
+		{
+			return "Invalid action supplied for processLogout.";
+		}
+		
+		session_destroy();
+		return TRUE;
 	}
 	
 	/**
@@ -135,7 +153,6 @@ class Admin extends DBConnect
 		{
 			$salt = substr($salt, 0, $this->_saltLength);	
 		}
-		
 		return $salt.sha1($salt.$string);
 	}
 	
