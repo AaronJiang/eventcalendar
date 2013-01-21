@@ -17,6 +17,7 @@ jQuery(function($){
 					//Creates a div, adds a class, and 
 					//appends it to the body tag
 					return $("<div>")
+							.hide()
 							.addClass("modal-window")
 							.appendTo("body");
 				}
@@ -26,6 +27,32 @@ jQuery(function($){
 					//already exists in the DOM
 					return $(".modal-window");
 				}	
+		},
+
+		//Adds the window to the markup and fades it in
+		"boxin" : function (data, modal){
+			//Creates an overlay for the site, adds
+			//a class and a click event handler, then
+			//appends it to the body element
+			$("<div>")
+				.hide()
+				.addClass("modal-overlay")
+				.click(function(event){
+					//Removes event
+					fx.boxout(event);
+				})
+				.appendTo("body");
+
+			//Loads data into the modal window and
+			//appends it to the body element
+			modal
+				.hide()
+				.append(data)
+				.appendTo("body");
+
+			//Fades	in the modal window and overlay
+			$(".modal-window, .modal-overlay")
+				.fadeIn("slow");
 		},
 		
 		//Fades out the window and removes it from the DOM
@@ -43,11 +70,21 @@ jQuery(function($){
 			
 			//Fade out the modal window, them removes 
 			//it from the DOM entirely
-			$(".modal-window") .fadeOut("slow",function(){
+			$(".modal-window, .modal-overlay") .fadeOut("slow",function(){
 							$(this).remove();
 						})
-		}
+		},
+
+		//Adds a new event to the markup after saving
+		"addevent" : function(data, formData){
+
+		},
 			
+		//Deserializes the query string and returns
+		//an event object
+		"deserialize" : function(str){
+
+		}
 	};
 	
 	
@@ -75,18 +112,89 @@ jQuery(function($){
 					fx.boxout(event);
 				})
 				.appendTo(modal);
-		
+
 		//Loads the event data from the DB
 		$.ajax({
 			type: "POST",
 			url: processFile,
 			data: "action=event_view&"+data,
 			success: function(data){
-				modal.append(data);
+				fx.boxin(data, modal);
 				},
 			error: function(msg){
 				modal.append(msg);
 				}
 		});
 	})
-})
+
+	//Display the edit form as a modal window
+	$(".admin").live("click", function(event){
+		//Prevents the form from submitting
+		event.preventDefault();
+
+		//Loads the action for the processing file
+		var action = "edit_event";
+
+		//Loads the editing form and displays it
+		$.ajax({
+			type : "POST",
+			url : processFile,
+			data : "action="+action,
+			success : function(data){
+				//Hide the form
+				var form = $(data).hide(),
+
+				//Make sure the modal window exists
+				modal = fx.initModal();
+
+				//Call the boxin function to create
+				//the modal overlay and fade it in
+				fx.boxin(null, modal);
+
+				//Load the form into the window,
+				//fades in the content, and adds
+				//a class to the form
+				form 
+					.appendTo(modal)
+					.addClass("edit-form")
+					.fadeIn("slow");
+			},
+			error : function(msg){
+				alert(msg);
+			}
+		});
+	});
+
+	//Edits events without reloading
+	$(".edit-form input[type=submit]").live("click", function(event){
+		//Prevents the default form action from executing
+		event.preventDefault();
+
+		//Serializes the form data for use with $.ajax()
+		var formData = $(this).parents("form").serialize();
+
+		//Sends the data to the processing file
+		$.ajax({
+			type : "POST",
+			url : processFile,
+			data : formData,
+			success : function(data){
+				//Fades out the modal window
+				fx.boxout();
+
+				// Logs a message to the console
+				console.log( "Event saved!" );
+			},
+			error : function(msg){
+				alert(msg);
+			}
+		});
+	});
+
+	//Make the cancel button on editing forms behave like the
+	//close button and fade out modal windows and overlays
+	$(".edit-form a:contains(cancel)").live("click", function(event){
+		fx.boxout(event);
+	});
+
+});

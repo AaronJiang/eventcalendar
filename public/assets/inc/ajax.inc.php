@@ -24,6 +24,14 @@ $actions = array(
 			'event_view' => array(
 				'object' => 'Calendar',
 				'method' => 'displayEvent'						
+			),
+			'edit_event' => array(
+				'object' => 'Calendar',
+				'method' => 'displayForm'						
+			),
+			'event_edit' => array(
+				'object' => 'Calendar',
+				'method' => 'processForm'						
 			)
 		);
 

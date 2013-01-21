@@ -1,6 +1,10 @@
 body {
-    background-color: #789;
-    font-family: georgia, serif;
+    background-color: #CCC;
+    background-image: url("../img/bg.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    font-family: Arial, calibri, georgia, serif;
     font-size: 13px;
 }
 #content {
@@ -61,10 +65,13 @@ li:hover {
 .weekdays li {
      height: 16px;
      padding: 2px 2px;
-     background-color: #BCF;
+     background-color: #1E8CBE;
+     color: #fff;
+     font-size: 14px;
+     font-weight: bold;
 }
 .fill {
-    background-color: #BCD;
+    background-color: #CCC;
 }
 .weekdays li:hover,li.fill:hover {
     background-color: #BCD;
