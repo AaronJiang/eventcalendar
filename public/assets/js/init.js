@@ -77,13 +77,93 @@ jQuery(function($){
 
 		//Adds a new event to the markup after saving
 		"addevent" : function(data, formData){
-
+			//Converts the query string to an object
+			var entry = fx.deserialize(formData),
+			
+			//Makes a date object for current month
+			cal = new Date(NaN),
+			
+			//Makes a date object for the new event
+			event = new Date(NaN),
+			
+			//Extracts the calendar month from the H2 ID
+			cdata = $("h2").attr("id").split('-'),
+			
+			//Extracts the event day, month, and year
+			date = entry.event_start.split(' ')[0];
+			
+			//Splits the event date into pieces
+			edata = date.split('-');
+			
+			//Sets the date for the calendar date object
+			cal.setFullYear(cdata[1], cdata[2], 1);
+			
+			//Sets the date for the event date object
+			event.setFullYear(edata[0], edata[1], edata[2]);
+			
+			//Since the date object is created using
+			//GMT, then adjusted for the local timezone,
+			//adjust the offset to ensure a proper date
+			event.setMinutes(event.getTimezoneOffset());
+			
+			//If the year and month match, start the process
+			//of adding the new event to the calendar
+			if(cal.getFullYear() == event.getFullYear()
+					&& cal.getMonth() == event.getMonth())
+			{
+				//Gets the day of the month for event
+				var day = String(event.getDate());
+				
+				//Adds a leading zero to 1-digit days
+				day = day.length==1 ? "0"+day : day;
+				
+				//Adds the new date link
+				$("<a>")
+					.hide()
+					.attr("href", "view.php?event_id="+data)
+					.text(entry.event_title)
+					.insertAfter($("strong:contains("+day+")"))
+					.delay(1000)
+					.fadeIn("slow");
+			}
+			
 		},
 			
 		//Deserializes the query string and returns
 		//an event object
 		"deserialize" : function(str){
+			//Breaks apart each name-value pair
+			var data = str.split("&"),
 
+			//Declares variables for use in the loop
+			pairs = [], entry = {}, key, val;
+
+			//Loops through each name-value pair
+			for(x in data)
+			{
+				//Splits each pair into an array
+				pairs = data[x].split("=");
+
+				//The first element is the name
+				key = pairs[0];
+
+				//Second element is the value
+				val = pairs[1];
+
+				//Store each value as an object property
+				entry[key] = fx.urldecode(val);
+			}
+
+			return entry;
+		},
+
+		//Decodes a query string value
+		"urldecode" : function(str){
+			//Convert plus signs to spaces
+			var converted = str.replace(/\+/g, ' ');
+
+			//Converts any encoded entities back
+			return decodeURIComponent(converted);
 		}
 	};
 	
@@ -182,8 +262,8 @@ jQuery(function($){
 				//Fades out the modal window
 				fx.boxout();
 
-				// Logs a message to the console
-				console.log( "Event saved!" );
+				//Adds the event to the calendar
+				fx.addevent(data, formData);
 			},
 			error : function(msg){
 				alert(msg);

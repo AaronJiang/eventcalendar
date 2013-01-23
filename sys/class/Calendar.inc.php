@@ -302,12 +302,13 @@ ADMIN_OPTIONS;
 		 * weekday abbreviations to label the calendar columns 
 		 */
 		$cal_month = date('F Y', strtotime($this->_useDate));
+		$cal_id = date('Y-m', strtotime($this->_useDate));
 		$weekdays = array('Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat');
 		
 		/*
 		 * Add a header to the calendar markup
 		 */
-		$html = "\n\t<h2>$cal_month</h2>";
+		$html = "\n\t<h2 id=\"month-$cal_id\">$cal_month</h2>";		
 		for($d=0, $labels=NULL; $d<7; ++$d)
 		{
 			$labels .= "\n\t\t<li>".$weekdays[$d]."</li>";
@@ -593,7 +594,11 @@ EOF;
 			$stmt->bindParam(":end", $end, PDO::PARAM_STR);
 			$stmt->execute();
 			$stmt->closeCursor();
-			return TRUE;	
+			
+			/*
+			 * Returns the ID of the event
+			 */
+			return $this->db->lastInsertID();
 		}
 		catch(Exception $e)
 		{
