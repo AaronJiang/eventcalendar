@@ -249,7 +249,7 @@ ADMIN_OPTIONS;
 		else
 		{
 			return <<<ADMIN_OPTIONS
-    		 <a href="login.php" class="btn">Log In</a>
+    		 <a href="login.php" class="btn login">Log In</a>
 ADMIN_OPTIONS;
 		}
 	}

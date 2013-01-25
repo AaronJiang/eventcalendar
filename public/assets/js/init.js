@@ -128,7 +128,16 @@ jQuery(function($){
 			}
 			
 		},
-			
+		
+		//Removes an event from the markup after deletion
+		"removeevent" : function(){
+			//Removes any event with the class "active"
+			$(".active")
+				.fadeOut("slow", function(){
+					$(this).remove();
+				})
+		},
+		
 		//Deserializes the query string and returns
 		//an event object
 		"deserialize" : function(str){
@@ -208,24 +217,35 @@ jQuery(function($){
 	})
 
 	//Display the edit form as a modal window
-	$(".admin").live("click", function(event){
+	$(".admin-options form, .admin").live("click", function(event){
 		//Prevents the form from submitting
 		event.preventDefault();
-
-		//Loads the action for the processing file
-		var action = "edit_event";
-
+		
+		//Sets the action for the form submission
+		var action = $(event.target).attr("name") || "edit_event";
+		
+		//Saves the value of the event_id input
+		id = $(event.target)
+				.siblings("input[name=event_id]")
+					.val();
+		
+		//Creates an additional param for the ID if set
+		id = (id!=undefined) ? "&event_id="+id : "";
+		
 		//Loads the editing form and displays it
 		$.ajax({
 			type : "POST",
 			url : processFile,
-			data : "action="+action,
+			data : "action="+action+id,
 			success : function(data){
 				//Hide the form
 				var form = $(data).hide(),
 
 				//Make sure the modal window exists
-				modal = fx.initModal();
+				modal = fx.initModal()
+							.children(":not(.modal-close-btn)")
+								.remove()
+								.end();
 
 				//Call the boxin function to create
 				//the modal overlay and fade it in
@@ -251,7 +271,28 @@ jQuery(function($){
 		event.preventDefault();
 
 		//Serializes the form data for use with $.ajax()
-		var formData = $(this).parents("form").serialize();
+		var formData = $(this).parents("form").serialize(),
+		
+			//Stores the value of the submit button
+			submitVal = $(this).val(),
+			
+			//Determines if the event should be removed
+			remove = false;
+		
+		//If this is the deletion form, appends an action
+		if( $(this).attr("name") == "confirm_delete" )
+		{
+			//Adds necessary info to the query string
+			formData += "&action=confirm_delete"
+						+ "&confirm_delete=" + submitVal;
+			
+			//If the event is really being deleted, sets
+			// a flag to remove it from the markup
+			if(submitVal == "Yes, Delete It")
+			{
+				remove = true;
+			}	
+		}
 
 		//Sends the data to the processing file
 		$.ajax({
@@ -259,11 +300,23 @@ jQuery(function($){
 			url : processFile,
 			data : formData,
 			success : function(data){
+				//If this is a deleted event, removes
+				//it from the markup
+				if(remove == true)
+				{
+					fx.removeevent();
+				}
+				
 				//Fades out the modal window
 				fx.boxout();
 
-				//Adds the event to the calendar
-				fx.addevent(data, formData);
+				//If this is a new event, adds it to 
+				//the calendar
+				if( $("[name=event_id]").val().length==0
+						&& remove == false)
+				{
+					fx.addevent(data, formData);
+				}
 			},
 			error : function(msg){
 				alert(msg);

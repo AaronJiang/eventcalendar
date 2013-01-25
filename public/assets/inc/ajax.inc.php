@@ -32,6 +32,14 @@ $actions = array(
 			'event_edit' => array(
 				'object' => 'Calendar',
 				'method' => 'processForm'						
+			),
+			'delete_event' => array(
+				'object' => 'Calendar',
+				'method' => 'confirmDelete'		
+			),
+			'confirm_delete' => array(
+				'object' => 'Calendar',
+				'method' => 'confirmDelete'
 			)
 		);
 
