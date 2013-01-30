@@ -10,3 +10,5 @@ ServerName yousite.com
 </VirtualHost> 
 
 2. Please create a new database and import eventcalendar.sql, make sure to config your databse connection in /sys/config/db-cred.inc.php
+
+3. Online demo http://cal.jianglong.org, user: testuser pass:admin 
