@@ -8,7 +8,7 @@ include_once '../sys/core/init.inc.php';
 /*
  * Load the calendar for January
  */
-$cal = new Calendar($dbo, "2010-01-01 12:00:00");
+$cal = new Calendar($dbo, "2013-02-01 12:00:00");
 
 /*
  * Include the header

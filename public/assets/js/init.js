@@ -215,7 +215,39 @@ jQuery(function($){
 				}
 		});
 	})
+	
+	//Display login form as a modal window
+	$(".login").live("click", function(event){
+		event.preventDefault();
+		
+		//Check if the modal window exists and 
+		//select it, or creates a new one
+		modal = fx.initModal();
+		
+		//Create a button to close the window
+		$("<a>").attr("href", "#")
+				.addClass("modal-close-btn")
+				.html("&times;")
+				.click(function(event){
+					//Removes modal window
+					fx.boxout(event);
+				})
+				.appendTo(modal);
 
+		//Loads the event data from the DB
+		$.ajax({
+			type: "GET",
+			url: "login_ajax.php",
+			success: function(data){
+				fx.boxin(data, modal);
+				},
+			error: function(msg){
+				modal.append(msg);
+				}
+		});
+		//console.log("log in!");
+	})
+	
 	//Display the edit form as a modal window
 	$(".admin-options form, .admin").live("click", function(event){
 		//Prevents the form from submitting
@@ -246,7 +278,16 @@ jQuery(function($){
 							.children(":not(.modal-close-btn)")
 								.remove()
 								.end();
-
+				//Create a button to close the window
+				$("<a>").attr("href", "#")
+						.addClass("modal-close-btn")
+						.html("&times;")
+						.click(function(event){
+							//Removes modal window
+							fx.boxout(event);
+						})
+						.appendTo(modal);
+				
 				//Call the boxin function to create
 				//the modal overlay and fade it in
 				fx.boxin(null, modal);
